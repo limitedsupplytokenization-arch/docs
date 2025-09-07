@@ -2,7 +2,11 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="theme-color" content="#3b82f6">
     <title>LST Documentation - Limited Supply Tokenization</title>
     <link rel="icon" type="image/jpeg" href="logo.jpeg">
     <link rel="stylesheet" href="docs-styles.css">
@@ -551,15 +555,20 @@ class LSTIntegration {
                             </thead>
                             <tbody>
                                 <tr>
-                                    <td>LST Token</td>
-                                    <td>
+                                    <td data-label="Contract">LST Token</td>
+                                    <td data-label="Address">
                                         <code>0x1D41F2046E119A9Ad132Fc909045a02DE6E7e502</code>
                                         <button class="copy-btn" data-clipboard-text="0x1D41F2046E119A9Ad132Fc909045a02DE6E7e502">
                                             <i class="fas fa-copy"></i>
                                         </button>
                                     </td>
-                                    <td>Base Mainnet</td>
-                                    <td><a href="https://basescan.org/token/0x1d41f2046e119a9ad132fc909045a02de6e7e502" target="_blank" class="explorer-link">BaseScan</a></td>
+                                    <td data-label="Network">Base Mainnet</td>
+                                    <td data-label="Action">
+                                        <a href="https://basescan.org/token/0x1d41f2046e119a9ad132fc909045a02de6e7e502" target="_blank" class="explorer-link">
+                                            <i class="fas fa-external-link-alt"></i>
+                                            BaseScan
+                                        </a>
+                                    </td>
                                 </tr>
                             </tbody>
                         </table>

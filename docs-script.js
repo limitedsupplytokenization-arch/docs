@@ -7,6 +7,7 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeMobileMenu();
     initializeSmoothScrolling();
     initializeActiveSection();
+    initializeMobileOptimizations();
 });
 
 // Tema yönetimi
@@ -239,16 +240,72 @@ function fallbackCopyText(text, button) {
 function initializeMobileMenu() {
     const mobileMenuToggle = document.getElementById('mobileMenuToggle');
     const sidebar = document.getElementById('sidebar');
+    const body = document.body;
     
-    mobileMenuToggle.addEventListener('click', function() {
+    mobileMenuToggle.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
         sidebar.classList.toggle('open');
+        
+        // Body scroll'u engelle/etkinleştir
+        if (sidebar.classList.contains('open')) {
+            body.style.overflow = 'hidden';
+        } else {
+            body.style.overflow = '';
+        }
     });
     
     // Sayfa dışına tıklandığında menüyü kapat
     document.addEventListener('click', function(e) {
-        if (!sidebar.contains(e.target) && !mobileMenuToggle.contains(e.target)) {
+        if (sidebar.classList.contains('open') && 
+            !sidebar.contains(e.target) && 
+            !mobileMenuToggle.contains(e.target)) {
             sidebar.classList.remove('open');
+            body.style.overflow = '';
         }
+    });
+    
+    // ESC tuşu ile menüyü kapat
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && sidebar.classList.contains('open')) {
+            sidebar.classList.remove('open');
+            body.style.overflow = '';
+        }
+    });
+    
+    // Swipe gesture desteği (mobil için)
+    let startX = 0;
+    let startY = 0;
+    
+    document.addEventListener('touchstart', function(e) {
+        startX = e.touches[0].clientX;
+        startY = e.touches[0].clientY;
+    });
+    
+    document.addEventListener('touchmove', function(e) {
+        if (!startX || !startY) return;
+        
+        const diffX = startX - e.touches[0].clientX;
+        const diffY = startY - e.touches[0].clientY;
+        
+        // Yatay kaydırma dikey kaydırmadan daha fazlaysa
+        if (Math.abs(diffX) > Math.abs(diffY)) {
+            // Sağdan sola kaydırma - menüyü aç
+            if (diffX > 50 && startX < 50 && !sidebar.classList.contains('open')) {
+                sidebar.classList.add('open');
+                body.style.overflow = 'hidden';
+            }
+            // Soldan sağa kaydırma - menüyü kapat
+            else if (diffX < -50 && sidebar.classList.contains('open')) {
+                sidebar.classList.remove('open');
+                body.style.overflow = '';
+            }
+        }
+    });
+    
+    document.addEventListener('touchend', function() {
+        startX = 0;
+        startY = 0;
     });
 }
 
@@ -470,6 +527,121 @@ function showNotification(message, type) {
     }, 3000);
 }
 
+// Mobil optimizasyonları
+function initializeMobileOptimizations() {
+    // Viewport meta tag kontrolü
+    const viewport = document.querySelector('meta[name="viewport"]');
+    if (!viewport) {
+        const meta = document.createElement('meta');
+        meta.name = 'viewport';
+        meta.content = 'width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes';
+        document.head.appendChild(meta);
+    }
+    
+    // Prevent horizontal scroll
+    document.documentElement.style.overflowX = 'hidden';
+    document.body.style.overflowX = 'hidden';
+    document.documentElement.style.width = '100%';
+    document.body.style.width = '100%';
+    document.documentElement.style.maxWidth = '100vw';
+    document.body.style.maxWidth = '100vw';
+    
+    // Force text wrapping on all elements
+    const allElements = document.querySelectorAll('*');
+    allElements.forEach(element => {
+        element.style.wordWrap = 'break-word';
+        element.style.overflowWrap = 'break-word';
+        element.style.wordBreak = 'break-word';
+        element.style.maxWidth = '100%';
+        element.style.boxSizing = 'border-box';
+        element.style.overflowX = 'hidden';
+    });
+    
+    // Touch action optimizasyonları
+    const touchElements = document.querySelectorAll('button, .nav-link, .copy-btn, .theme-toggle, .mobile-menu-toggle');
+    touchElements.forEach(element => {
+        element.style.touchAction = 'manipulation';
+    });
+    
+    // Lazy loading için intersection observer
+    if ('IntersectionObserver' in window) {
+        const imageObserver = new IntersectionObserver((entries, observer) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const img = entry.target;
+                    if (img.dataset.src) {
+                        img.src = img.dataset.src;
+                        img.removeAttribute('data-src');
+                        observer.unobserve(img);
+                    }
+                }
+            });
+        });
+        
+        const lazyImages = document.querySelectorAll('img[data-src]');
+        lazyImages.forEach(img => imageObserver.observe(img));
+    }
+    
+    // Mobile-specific scroll optimizations
+    let ticking = false;
+    function updateScrollPosition() {
+        // Scroll-based optimizations
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        
+        // Header shadow on scroll
+        const header = document.querySelector('.header');
+        if (scrollTop > 10) {
+            header.style.boxShadow = '0 2px 20px rgba(0,0,0,0.1)';
+        } else {
+            header.style.boxShadow = 'none';
+        }
+        
+        ticking = false;
+    }
+    
+    function requestTick() {
+        if (!ticking) {
+            requestAnimationFrame(updateScrollPosition);
+            ticking = true;
+        }
+    }
+    
+    window.addEventListener('scroll', requestTick, { passive: true });
+    
+    // Prevent zoom on double tap (iOS)
+    let lastTouchEnd = 0;
+    document.addEventListener('touchend', function(event) {
+        const now = (new Date()).getTime();
+        if (now - lastTouchEnd <= 300) {
+            event.preventDefault();
+        }
+        lastTouchEnd = now;
+    }, false);
+    
+    // Mobile keyboard handling
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) {
+        searchInput.addEventListener('focus', function() {
+            // Delay to ensure keyboard is shown
+            setTimeout(() => {
+                this.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 300);
+        });
+    }
+    
+    // Performance monitoring for mobile
+    if ('performance' in window) {
+        window.addEventListener('load', function() {
+            setTimeout(() => {
+                const perfData = performance.getEntriesByType('navigation')[0];
+                if (perfData && perfData.loadEventEnd - perfData.loadEventStart > 3000) {
+                    console.warn('Slow page load detected on mobile');
+                }
+            }, 0);
+        });
+    }
+}
+
 // CSS animasyonları için style ekle
 const style = document.createElement('style');
 style.textContent = `
@@ -487,5 +659,32 @@ style.textContent = `
         opacity: 0.5;
         pointer-events: none;
     }
+    
+    /* Mobile-specific improvements */
+    @media (max-width: 768px) {
+        .header {
+            transition: box-shadow 0.3s ease;
+        }
+        
+        /* Prevent text selection on buttons */
+        button, .nav-link, .copy-btn {
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+        
+        /* Improve tap highlights */
+        button, .nav-link, .copy-btn, .theme-toggle, .mobile-menu-toggle {
+            -webkit-tap-highlight-color: rgba(59, 130, 246, 0.1);
+        }
+        
+        /* Smooth transitions for mobile */
+        * {
+            -webkit-transition: all 0.3s ease;
+            transition: all 0.3s ease;
+        }
+    }
 `;
 document.head.appendChild(style);
+
