@@ -114,18 +114,20 @@ body {
 }
 
 .logo-img {
-    width: 36px;
-    height: 36px;
+    width: 22px;
+    height: 30px;
     border-radius: 8px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     transition: all 0.3s ease;
-    border: 2px solid var(--accent-color);
+    object-fit: cover;
 }
 
 .logo-img:hover {
     box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
     transform: rotate(5deg);
 }
+
+
 
 .logo-text {
     background: linear-gradient(135deg, var(--accent-color), var(--accent-hover));
@@ -1215,6 +1217,12 @@ td code {
         width: 100%;
         max-width: 100%;
         box-sizing: border-box;
+        align-items: center;
+    }
+    
+    .logo {
+        align-items: center;
+        gap: 0.5rem;
     }
     
     .logo-text {
@@ -1222,10 +1230,11 @@ td code {
     }
     
     .logo-img {
-        width: 32px;
-        height: 32px;
-        border: 1px solid var(--accent-color);
+        width: 18px;
+        height: 26px;
+        border-radius: 6px;
     }
+    
     
     /* Content wrapper improvements */
     .content-wrapper {
@@ -1700,6 +1709,27 @@ td code {
         overflow-wrap: break-word !important;
         word-break: break-word !important;
     }
+    
+    /* Header optimizations for medium screens */
+    .header-container {
+        align-items: center;
+    }
+    
+    .logo {
+        align-items: center;
+        gap: 0.75rem;
+    }
+    
+    .logo-text {
+        font-size: 1rem;
+    }
+    
+    .logo-img {
+        width: 20px;
+        height: 28px;
+        border-radius: 7px;
+    }
+    
     
     .doc-section h1 {
         font-size: 2rem;
